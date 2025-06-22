@@ -5,7 +5,6 @@ import google.generativeai as genai
 
 load_dotenv()
 
-
 DATA_PATH = r"data"
 CHROMA_PATH = r"chroma_db"
 
@@ -30,9 +29,7 @@ results = collection.query(
 )
 
 print(results['documents'])
-#print(results['metadatas'])
 
-# client = OpenAI()
 model = genai.GenerativeModel('gemini-2.0-flash-lite')
 
 system_prompt = """
