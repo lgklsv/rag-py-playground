@@ -1,49 +1,91 @@
 # RAG-Py-Playground
 
-<h2>Prerequisites</h2>
-<ul>
-  <li>Python 3.11+</li>
-</ul>
+## Prerequisites
 
-<h2>Installation</h2>
-<h3>1. Clone the repository:</h3>
+- Python 3.11+
+- [Gemini API Key](https://aistudio.google.com/app/apikey)
 
+## Installation
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/lgklsv/rag-py-playground.git
+   cd rag-py-playground
+   ```
+
+2. **Create a virtual environment:**
+
+   ```bash
+   python -m venv venv
+   ```
+
+3. **Activate the virtual environment:**
+
+   - On Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
+   - On Mac/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+
+4. **Install dependencies:**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Configure Gemini API Key:**
+   - Get your Gemini API Key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+   - Create a `.env` file in the project root with the following content:
+     ```env
+     GEMINI_API_KEY=your_api_key_here
+     ```
+
+## Running the API
+
+Start the FastAPI server using [uvicorn](https://www.uvicorn.org/):
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
-git clone https://github.com/ThomasJanssen-tech/Retrieval-Augmented-Generation.git
-cd Retrieval-Augmented-Generation
-```
 
-<h3>2. Create a virtual environment</h3>
+- The API will be available at `http://127.0.0.1:8000` by default.
+- Interactive API docs: `http://127.0.0.1:8000/docs`
 
-```
-python -m venv venv
-```
+## API Endpoints
 
-<h3>3. Activate the virtual environment</h3>
+### `GET /health`
 
-```
-venv\Scripts\Activate
-(or on Mac): source venv/bin/activate
-```
+- Checks the health of the API and its dependencies (ChromaDB, Gemini model, embedding model).
+- Returns status and collection count.
 
-<h3>4. Install libraries</h3>
+### `POST /query`
 
-```
-pip install -r requirements.txt
-```
+- Receives a user query and returns a generated response using Retrieval-Augmented Generation (RAG).
+- **Request body:**
+  ```json
+  {
+    "query": "Who is the artist of object 12345?"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "query": "...",
+    "response": "...",
+    "context": ["...retrieved context..."]
+  }
+  ```
 
-<h3>5. Add Gemini API Key</h3>
-Get a Gemini API Key from here: https://aistudio.google.com/app/apikey<BR>
-Add it to .env.example as GEMINI_API_KEY<BR>
-Rename to .env<BR>
+## Notes
 
-<h2>Executing the scripts</h2>
+- Ensure your ChromaDB collection is populated (see project scripts or instructions for indexing if needed).
+- Populating the ChromaDB collection may take a while, on my Macbook Air M1 8RAM it took 1.5 hours.
+- If you see a warning about an empty collection, you may need to run your data indexing script first.
 
-- Open a terminal in VS Code
+---
 
-- Execute the following command:
-
-```
-python fill_db.py
-python ask.py
-```
+For further details, see the code in `main.py`.
