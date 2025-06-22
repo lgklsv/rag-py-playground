@@ -18,36 +18,53 @@ except KeyError:
 
 chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
-collection = chroma_client.get_or_create_collection(name="growing_vegetables")
+collection = chroma_client.get_or_create_collection(name="json_documents_collection")
 
+model = genai.GenerativeModel('gemini-2.0-flash-lite')
+print("Gemini model 'gemini-2.0-flash-lite' initialized.")
 
-user_query = input("What do you want to know about growing vegetables?\n\n")
+user_query = input("What do you want to know about Minneapolis Institute of Art ?\n\n")
 
+print("Searching ChromaDB for relevant context...")
 results = collection.query(
     query_texts=[user_query],
     n_results=4
 )
 
-print(results['documents'])
+retrieved_documents = []
+for doc_list in results['documents']:
+    for doc_content in doc_list:
+        retrieved_documents.append(doc_content)
 
-model = genai.GenerativeModel('gemini-2.0-flash-lite')
+context_str = "\n\n".join(retrieved_documents)
 
-system_prompt = """
-You are a helpful assistant. You answer questions about growing vegetables in Florida. 
-But you only answer based on knowledge I'm providing you. You don't use your internal 
-knowledge and you don't make thins up.
-If you don't know the answer, just say: I don't know
---------------------
-The data:
-"""+str(results['documents'])+"""
+system_prompt_template = """
+You are an expert art historian and guide for the Minneapolis Institute of Art (Mia).
+Your primary task is to answer user questions exclusively based on the provided "ART OBJECT CONTEXT".
+Your goal is to provide accurate, concise, and informative answers about the museum's collection.
+
+**Guidelines:**
+- **Strictly use the provided context:** Do not use any external knowledge.
+- **Do not invent information:** If the "ART OBJECT CONTEXT" does not contain the answer, state clearly that the information is not available in the provided data.
+- **Focus on art object details:** Prioritize information about the artwork, artist, date, medium, collection, and relevant historical or artistic context found in the provided text.
+- **Be helpful and polite, but concise.**
+
+**ART OBJECT CONTEXT:**
+{context}
+
+**User Question:**
+{question}
+
+**Answer:**
 """
 
-#print(system_prompt)
+final_system_prompt = system_prompt_template.format(
+    context=context_str,
+    question=user_query
+)
 
 messages = [
-    {"role": "user", "parts": [system_prompt]},
-    {"role": "model", "parts": ["Understood. I will answer based only on the provided data."]}, # Optional: to simulate the AI acknowledging the system prompt
-    {"role": "user", "parts": [user_query]}
+    {"role": "user", "parts": [final_system_prompt]},
 ]
 
 print("\n\nGenerating response with Gemini...\n")
@@ -62,3 +79,4 @@ except genai.APIError as e:
     print(f"Error calling Gemini API: {e}")
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
+    
